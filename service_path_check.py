@@ -8,6 +8,7 @@ import socket
 import ssl
 import subprocess
 import sys
+import tempfile
 import time
 
 from report import write_report
@@ -24,11 +25,36 @@ def resolve_worker(host, port):
 def resolve(host, port, timeout):
     # An OS resolver can block beyond socket timeouts. A disposable child gives
     # DNS its own enforceable deadline without leaving background threads.
+    # Windowed Python and packaged desktop apps have no standard output.
+    # Use a private temporary result file for that child-process protocol.
+    if getattr(sys, 'frozen', False) or Path(sys.executable).name.lower().startswith('pythonw'):
+        with tempfile.TemporaryDirectory(prefix='service-path-dns-') as directory:
+            output = Path(directory) / 'result.json'
+            command = [sys.executable]
+            if not getattr(sys, 'frozen', False): command.append(str(Path(__file__).resolve()))
+            command.extend(['--resolve-worker', host, str(port), str(output)])
+            completed = subprocess.run(command, capture_output=True, timeout=timeout,
+                                       creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
+            result = json.loads(output.read_text(encoding='utf-8'))
+            if completed.returncode or 'error' in result:
+                raise OSError(result.get('error', 'Resolver failed'))
+            return result['addresses']
     command = [sys.executable, str(Path(__file__).resolve()), '--resolve', host, str(port)]
     completed = subprocess.run(command, capture_output=True, text=True, timeout=timeout)
     if completed.returncode:
         raise OSError(completed.stderr.strip() or 'Resolver failed')
     return json.loads(completed.stdout)
+
+
+def resolver_worker_file(host, port, output):
+    try:
+        result = {'addresses': resolve_worker(host, int(port))}
+        code = 0
+    except (OSError, ValueError) as error:
+        result = {'error': str(error)}
+        code = 1
+    Path(output).write_text(json.dumps(result), encoding='utf-8')
+    return code
 
 
 def validate_config(data):
@@ -147,6 +173,7 @@ def main():
             result = run(config)
         else:
             p.error('Choose --demo or --config FILE')
+        if args.demo: result['demo'] = True
         report = write_report(result, args.output, 'Service Path Check')
         print(f"{result['status'].upper()}: {report}")
         return 0 if result['status'] == 'pass' else 1
@@ -156,7 +183,9 @@ def main():
 
 
 if __name__ == '__main__':
-    if len(sys.argv) == 4 and sys.argv[1] == '--resolve':
+    if len(sys.argv) == 5 and sys.argv[1] == '--resolve-worker':
+        sys.exit(resolver_worker_file(*sys.argv[2:]))
+    elif len(sys.argv) == 4 and sys.argv[1] == '--resolve':
         try:
             print(json.dumps(resolve_worker(sys.argv[2], int(sys.argv[3]))))
         except (OSError, ValueError) as exc:

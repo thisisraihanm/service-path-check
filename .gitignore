@@ -6,3 +6,7 @@ services.local.json
 *.pem
 *.key
 .venv/
+
+build/
+dist/
+*.spec

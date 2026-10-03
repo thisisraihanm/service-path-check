@@ -1,0 +1,75 @@
+name: Windows desktop app
+on:
+  pull_request:
+  push:
+    branches: [main]
+    paths:
+      - '*.py'
+      - 'examples/**'
+      - 'Collect-Snapshot.ps1'
+      - '.github/workflows/desktop.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-python@v7.0.0
+        with:
+          python-version: '3.12'
+      - run: python -m pip install pyinstaller==6.22.3
+      - name: Test source desktop
+        run: |
+          New-Item -ItemType Directory -Force dist | Out-Null
+          python desktop.py --self-test dist/source-smoke.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Build and test packaged desktop
+        run: python build_windows.py
+      - name: Capture the desktop example
+        shell: pwsh
+        run: |
+          $app = Start-Process -FilePath (Join-Path $PWD 'dist/ServicePathCheck.exe') -ArgumentList '--preview' -PassThru
+          try {
+            Start-Sleep -Seconds 5
+            Add-Type -AssemblyName System.Windows.Forms
+            Add-Type -AssemblyName System.Drawing
+            $screen = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+            $image = New-Object System.Drawing.Bitmap($screen.Width, $screen.Height)
+            $graphics = [System.Drawing.Graphics]::FromImage($image)
+            $graphics.CopyFromScreen($screen.Location, [System.Drawing.Point]::Empty, $screen.Size)
+            $image.Save((Join-Path $PWD 'dist/desktop-preview.png'), [System.Drawing.Imaging.ImageFormat]::Png)
+            $graphics.Dispose()
+            $image.Dispose()
+          } finally { Stop-Process -Id $app.Id -Force -ErrorAction SilentlyContinue }
+      - uses: actions/upload-artifact@v7.0.1
+        with:
+          name: windows-app
+          path: |
+            dist/*-Windows.zip
+            dist/*-smoke.json
+            dist/desktop-preview.png
+          if-no-files-found: error
+  publish:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/download-artifact@v8.0.0
+        with:
+          name: windows-app
+          path: release-assets
+      - name: Publish verified Windows archive
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          if ! gh release view desktop-v1.1.0 >/dev/null 2>&1; then
+            gh release create desktop-v1.1.0 --target "$GITHUB_SHA" --title "Easy Windows app 1.1.0" --notes-file RELEASE-NOTES.md
+          fi
+          gh release upload desktop-v1.1.0 release-assets/ServicePathCheck-Windows.zip --clobber
