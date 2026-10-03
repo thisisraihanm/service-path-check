@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "timestamp": "2026-10-03T06:00:00+00:00",
+  "status": "attention",
+  "summary": "Synthetic demo: a TLS error and an intermittent TCP path. No network traffic is sent.",
+  "findings": [
+    {
+      "status": "fail",
+      "item": "Lab portal",
+      "evidence": "DNS and TCP passed; certificate name validation failed.",
+      "next_step": "Check the certificate SAN and intended hostname. Keep TLS validation enabled."
+    },
+    {
+      "status": "degraded",
+      "item": "Lab file service",
+      "evidence": "2/3 TCP samples passed. One attempt timed out.",
+      "next_step": "Compare timing with link and firewall logs. This does not prove a specific device caused the failure."
+    }
+  ],
+  "observations": [
+    {
+      "name": "Lab portal",
+      "host": "portal.example.test",
+      "port": 443,
+      "status": "fail",
+      "dns": {
+        "status": "pass"
+      },
+      "addresses": [
+        {
+          "ip": "192.0.2.10",
+          "tcp": "pass",
+          "tcp_ms": 4.2,
+          "tls": "fail",
+          "error": "Synthetic hostname mismatch"
+        }
+      ]
+    },
+    {
+      "name": "Lab file service",
+      "host": "files.example.test",
+      "port": 445,
+      "status": "degraded",
+      "samples": [
+        "pass",
+        "fail",
+        "pass"
+      ],
+      "note": "Abbreviated synthetic evidence; live reports record each address in every sample."
+    }
+  ]
+}

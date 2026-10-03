@@ -1,0 +1,18 @@
+{
+  "timeout": 3,
+  "samples": 3,
+  "services": [
+    {
+      "name": "Lab portal",
+      "host": "portal.example.test",
+      "port": 443,
+      "tls": true
+    },
+    {
+      "name": "Lab file service",
+      "host": "files.example.test",
+      "port": 445,
+      "tls": false
+    }
+  ]
+}

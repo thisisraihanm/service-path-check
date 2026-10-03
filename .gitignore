@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+reports/
+snapshots/
+services.local.json
+*.pem
+*.key
+.venv/

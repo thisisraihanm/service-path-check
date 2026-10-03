@@ -1,0 +1,65 @@
+<!doctype html><html lang="en"><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Service Path Check</title><style>
+body{font:16px/1.6 system-ui,sans-serif;background:#f5f7fb;color:#16283c;margin:0}
+main{max-width:1100px;margin:40px auto;padding:28px;background:white;border-radius:12px}
+h1{line-height:1.2}.summary{padding:16px;background:#e9f0fa;border-left:4px solid #2865b0}
+table{border-collapse:collapse;width:100%;margin-top:24px}th,td{padding:12px;text-align:left;vertical-align:top;border-bottom:1px solid #d9e2ec;overflow-wrap:anywhere}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px}details{margin-top:24px}
+@media(max-width:700px){main{margin:0;padding:16px}table{display:block;overflow-x:auto}}
+</style><main><p>LOCAL OPERATIONS REPORT · 2026-10-03T06:00:00+00:00</p><h1>Service Path Check</h1>
+<p class="summary"><strong>attention</strong> — Synthetic demo: a TLS error and an intermittent TCP path. No network traffic is sent.</p>
+<table><thead><tr><th>Status</th><th>Item</th><th>Evidence</th><th>Next step</th></tr></thead><tbody><tr><td>fail</td><td>Lab portal</td><td>DNS and TCP passed; certificate name validation failed.</td><td>Check the certificate SAN and intended hostname. Keep TLS validation enabled.</td></tr><tr><td>degraded</td><td>Lab file service</td><td>2/3 TCP samples passed. One attempt timed out.</td><td>Compare timing with link and firewall logs. This does not prove a specific device caused the failure.</td></tr></tbody></table>
+<details><summary>Full evidence (JSON)</summary><pre>{
+  &quot;schema_version&quot;: 1,
+  &quot;timestamp&quot;: &quot;2026-10-03T06:00:00+00:00&quot;,
+  &quot;status&quot;: &quot;attention&quot;,
+  &quot;summary&quot;: &quot;Synthetic demo: a TLS error and an intermittent TCP path. No network traffic is sent.&quot;,
+  &quot;findings&quot;: [
+    {
+      &quot;status&quot;: &quot;fail&quot;,
+      &quot;item&quot;: &quot;Lab portal&quot;,
+      &quot;evidence&quot;: &quot;DNS and TCP passed; certificate name validation failed.&quot;,
+      &quot;next_step&quot;: &quot;Check the certificate SAN and intended hostname. Keep TLS validation enabled.&quot;
+    },
+    {
+      &quot;status&quot;: &quot;degraded&quot;,
+      &quot;item&quot;: &quot;Lab file service&quot;,
+      &quot;evidence&quot;: &quot;2/3 TCP samples passed. One attempt timed out.&quot;,
+      &quot;next_step&quot;: &quot;Compare timing with link and firewall logs. This does not prove a specific device caused the failure.&quot;
+    }
+  ],
+  &quot;observations&quot;: [
+    {
+      &quot;name&quot;: &quot;Lab portal&quot;,
+      &quot;host&quot;: &quot;portal.example.test&quot;,
+      &quot;port&quot;: 443,
+      &quot;status&quot;: &quot;fail&quot;,
+      &quot;dns&quot;: {
+        &quot;status&quot;: &quot;pass&quot;
+      },
+      &quot;addresses&quot;: [
+        {
+          &quot;ip&quot;: &quot;192.0.2.10&quot;,
+          &quot;tcp&quot;: &quot;pass&quot;,
+          &quot;tcp_ms&quot;: 4.2,
+          &quot;tls&quot;: &quot;fail&quot;,
+          &quot;error&quot;: &quot;Synthetic hostname mismatch&quot;
+        }
+      ]
+    },
+    {
+      &quot;name&quot;: &quot;Lab file service&quot;,
+      &quot;host&quot;: &quot;files.example.test&quot;,
+      &quot;port&quot;: 445,
+      &quot;status&quot;: &quot;degraded&quot;,
+      &quot;samples&quot;: [
+        &quot;pass&quot;,
+        &quot;fail&quot;,
+        &quot;pass&quot;
+      ],
+      &quot;note&quot;: &quot;Abbreviated synthetic evidence; live reports record each address in every sample.&quot;
+    }
+  ]
+}</pre></details>
+<p>Generated locally. Review evidence before making changes.</p></main></html>
