@@ -48,5 +48,6 @@
       ],
       "note": "Abbreviated synthetic evidence; live reports record each address in every sample."
     }
-  ]
+  ],
+  "demo": true
 }

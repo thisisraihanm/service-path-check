@@ -1,5 +1,16 @@
 # Service Path Check
 
+## Open it without commands (Windows)
+
+[**Download the Windows app**](https://github.com/thisisraihanm/service-path-check/releases/latest) → download **ServicePathCheck-Windows.zip** under Assets → **Extract All** → double-click **ServicePathCheck.exe**. Python is included.
+
+Click **Try a safe example** first. Then Type or paste a website address, then click **Check connection**. For an office file server, select **Windows file server** and enter the name provided by IT.
+
+[Step-by-step beginner guide](START-HERE.md). The screen and report explain the result in plain language. Detailed evidence remains available for IT.
+
+If you downloaded source code with **Code → Download ZIP**, Python 3.11+ with Tk is required; double-click **Start-Windows.cmd** after installing it.
+
+
 **Find where a configured service connection fails: DNS, TCP, or verified TLS.**
 
 A user says the portal is unavailable. Ping replies, so the ticket gets passed around. This tool checks the path the service actually uses and saves evidence for the next person investigating.
