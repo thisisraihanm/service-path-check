@@ -1,95 +1,79 @@
 # Service Path Check
 
-## Open it without commands (Windows)
+**Find which stage of a configured service connection needs attention.**
 
-[**Download the Windows app**](https://github.com/thisisraihanm/service-path-check/releases/latest) → download **ServicePathCheck-Windows.zip** under Assets → **Extract All** → double-click **ServicePathCheck.exe**. Python is included.
+A server answers ping but the service still does not work. Check name resolution, the actual TCP port and optional verified TLS separately, then save the findings.
 
-Click **Try a safe example** first. Then Type or paste a website address, then click **Check connection**. For an office file server, select **Windows file server** and enter the name provided by IT.
+[Download Windows app](https://github.com/thisisraihanm/service-path-check/releases/latest) · [Start here](START-HERE.md) · [Visual guide](docs/VISUAL-GUIDE.md) · [Technical reference](docs/TECHNICAL-REFERENCE.md)
 
-[Step-by-step beginner guide](START-HERE.md). The screen and report explain the result in plain language. Detailed evidence remains available for IT.
+![Service Path Check architecture](docs/images/architecture.svg)
 
-If you downloaded source code with **Code → Download ZIP**, Python 3.11+ with Tk is required; double-click **Start-Windows.cmd** after installing it.
+## Try it in three steps
 
+1. **Download and open.** On the [release page](https://github.com/thisisraihanm/service-path-check/releases/latest), download **ServicePathCheck-Windows.zip** under Assets, choose **Extract All**, then open **ServicePathCheck.exe**. Python is included.
+2. **Try a safe example.** Click **Try a safe example**. It uses fictional data so you can learn what the results mean first.
+3. **Use your own inputs.** Enter a website address and click **Check connection**. For an office file server, choose **Windows file server** and enter the name supplied by IT.
 
-**Find where a configured service connection fails: DNS, TCP, or verified TLS.**
+The tool reads and reports; it does not repair settings or copy/delete your files. See the [beginner guide](START-HERE.md) for help opening the unsigned Windows app and choosing the right download.
 
-A user says the portal is unavailable. Ping replies, so the ticket gets passed around. This tool checks the path the service actually uses and saves evidence for the next person investigating.
+## See the result before installing
 
-It checks every resolved address up to an explicit limit, preserves failed samples, and separates observation from diagnosis. A TCP timeout can justify checking routing, listeners, and policy; it cannot prove a firewall is the cause.
+![Service Path Check demo report overview](docs/images/report-overview.png)
 
-## Try the offline demo
+*Rendered from the actual HTML report with fictional demo data. This is a report preview, not a production result or Windows desktop screenshot.*
 
-Requires Python 3.11 or newer. No pip packages. Run from this repository directory:
+| Example item | Result | What you are seeing |
+|---|---|---|
+| Lab portal | Fail | DNS and TCP pass, but TLS hostname verification fails. |
+| Lab file service | Degraded | Two of three fictional TCP samples pass; one times out. |
+
+[See the detailed report image and decision flowchart →](docs/VISUAL-GUIDE.md)
+
+## What happens inside
+
+```mermaid
+flowchart TD
+    A["Resolve the configured hostname"] --> B{"Usable addresses before deadline?"}
+    B -->|No| C["Record a DNS failure"]
+    B -->|Yes| D["Attempt TCP on each selected address"]
+    D --> E{"TCP connected?"}
+    E -->|No| F["Record the connection failure"]
+    E -->|Yes| G{"TLS requested?"}
+    G -->|Yes| H["Verify certificate trust and hostname"]
+    G -->|No| I["Record TCP result; TLS not requested"]
+    H --> J["Keep every result across the configured samples"]
+    I --> J
+    C --> J
+    F --> J
+    J --> K["Report pass, degraded or fail per service"]
+```
+
+## Run the offline demo from source
+
+Requires **Python 3.11+**. No pip packages are needed for the application. From this repository directory:
 
 ```sh
 python service_path_check.py --demo
 ```
 
-Open `reports/service-path.html` in your browser. The JSON beside it contains the evidence. The demo uses fictional data, sends no network traffic, and exits **1** because it intentionally shows problems.
+Open `reports/service-path.html`. The neighboring JSON file contains the detailed evidence. Exit code **1** is expected because the fictional demo deliberately includes findings.
 
-[Included fictional example report](docs/demo-report.html)
+For the source desktop interface, install Python with Tcl/Tk and open `Start-Windows.cmd` on Windows, or run `python3 desktop.py` on Linux/macOS. Windows settings collection is available only on Windows.
 
-## Check an authorized service
+## Scope and evidence
 
-Copy `examples/services.example.json` to `services.local.json`. Replace the fictional hostnames with the exact services you are authorized to check:
+Tests only explicitly configured endpoints. A successful path does not establish login access, application functionality or uptime. A failed connection alone cannot identify the responsible device. The offline demo sends no network traffic.
 
-```json
-{
-  "timeout": 3,
-  "samples": 3,
-  "services": [
-    {"name": "Lab portal", "host": "portal.example.test", "port": 443, "tls": true},
-    {"name": "Lab file service", "host": "files.example.test", "port": 445, "tls": false}
-  ]
-}
-```
+- [Visual walkthrough](docs/VISUAL-GUIDE.md): architecture, decisions and report previews.
+- [Lab exercise](WALKTHROUGH.md): reproduce and explain the behavior.
+- [Technical reference](docs/TECHNICAL-REFERENCE.md): commands, interpretation, limitations and official references.
+- [Example HTML](docs/demo-report.html) and [JSON evidence](docs/demo-report.json): fictional demonstration output. Download the HTML to view it in a browser.
+- [Automated checks](https://github.com/thisisraihanm/service-path-check/actions): inspect the run and commit before drawing conclusions.
 
-```sh
-python service_path_check.py --config services.local.json --output reports/morning-check
-```
+Run the existing test suite with `python -m unittest discover -s tests -v`.
 
-These `.test` names are placeholders. There is no subnet scan or automatic device discovery. Only configured endpoints receive TCP connections and, when requested, TLS handshakes. No HTTP requests, login attempts, or file-service operations are sent.
+## Learning focus
 
-For an internal certificate authority, add `"ca_file": "lab-ca.pem"` to the configuration. The path is resolved relative to the configuration file. Supply a PEM CA certificate, never a private key. Certificate chain and hostname verification stay enabled.
+TCP/IP troubleshooting, DNS resolution, TCP connectivity, TLS validation and careful interpretation of network evidence.
 
-Run the tool from the affected user's network/VPN context: a check from another machine may see a different DNS answer or route.
-
-## Read the result
-
-| Observation | Meaning | Useful next step |
-|---|---|---|
-| DNS fails or reaches its deadline | This machine did not obtain usable addresses | Check spelling, resolver settings, and VPN context |
-| DNS passes; TCP fails | The configured service port could not be reached on that address | Check route, service listener, and firewall evidence |
-| TCP passes; TLS fails | A socket connected, but a verified TLS session failed | Check certificate name, expiry, trust chain, clock, and protocol |
-| Some addresses/samples pass | Path is inconsistent | Compare failing addresses and timestamps with infrastructure logs |
-| All requested stages pass | The observed service path worked during these checks | Test application function, permissions, and authentication separately |
-
-A non-TLS service can pass DNS and TCP only. That does not confirm SMB access or application functionality. Port 587 with STARTTLS, for example, needs protocol negotiation and must not be treated as direct TLS by this tool.
-
-## Design and limits
-
-- DNS uses the operating system resolver, including its cache and hosts file. It does not query each configured upstream DNS server separately.
-- A short-lived child process bounds DNS resolution time. Socket timeouts alone do not bound `getaddrinfo()` reliably.
-- Every selected address gets a TCP attempt. TLS uses the intended hostname for SNI and validation. A failing address prevents an all-green service result.
-- At most eight addresses per sample are checked. Larger answers are explicitly marked incomplete for a full pass.
-- The timeout is **per DNS/TCP/TLS stage**, not for the whole run. Checks and samples run sequentially. A large configuration with failing endpoints can take several minutes.
-- Samples run consecutively. They are snapshots, not long-term availability statistics; TCP timing excludes DNS and is not ping RTT.
-- Trust uses Python's default TLS context or your supplied CA bundle. Revocation checking and application authentication are outside this tool's scope.
-- Reports can reveal internal endpoints. Local config and report folders are ignored by Git, but inspect changes before committing.
-
-## Validate and learn
-
-```sh
-python -m unittest discover -s tests -v
-```
-
-Tests include real loopback connections, refused ports, mixed addresses, DNS deadlines, intermittent samples, and HTML escaping. The optional real TLS test generates a temporary localhost certificate using an installed OpenSSL executable; it checks trust and hostname failures without contacting the internet.
-
-See [WALKTHROUGH.md](WALKTHROUGH.md) for a short lab and how to explain the design. GitHub Actions is configured for Windows/Linux and Python 3.11/3.12; remote execution is only confirmed after its first successful run.
-
-## References
-
-- [Python socket documentation](https://docs.python.org/3/library/socket.html)
-- [Python TLS documentation](https://docs.python.org/3/library/ssl.html)
-
-MIT licensed. Initial implementation prepared with AI assistance for Raihan Mahmud's learning portfolio. No production use or performance improvement is claimed.
+MIT licensed. Prepared with AI assistance for Raihan Mahmud's learning portfolio. No production deployment, business impact or operational recovery success is claimed.

@@ -1,0 +1,14 @@
+flowchart TD
+    A["Resolve the configured hostname"] --> B{"Usable addresses before deadline?"}
+    B -->|No| C["Record a DNS failure"]
+    B -->|Yes| D["Attempt TCP on each selected address"]
+    D --> E{"TCP connected?"}
+    E -->|No| F["Record the connection failure"]
+    E -->|Yes| G{"TLS requested?"}
+    G -->|Yes| H["Verify certificate trust and hostname"]
+    G -->|No| I["Record TCP result; TLS not requested"]
+    H --> J["Keep every result across the configured samples"]
+    I --> J
+    C --> J
+    F --> J
+    J --> K["Report pass, degraded or fail per service"]

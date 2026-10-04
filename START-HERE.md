@@ -1,5 +1,7 @@
 # Start here — no commands needed
 
+[See illustrated examples and the workflow](docs/VISUAL-GUIDE.md).
+
 ## Windows app
 
 1. Open [the Windows download page](https://github.com/thisisraihanm/service-path-check/releases/latest).
@@ -28,3 +30,4 @@ The GitHub **Code → Download ZIP** button downloads source code, which needs P
 Linux/macOS users with Python and Tk installed can run `python3 desktop.py`. The Windows settings collector is available only on Windows; comparing saved settings and the safe example work on other supported desktops.
 
 The tool reads and reports. It does not repair configurations, copy backup files, or delete files. Successful connection checks do not prove the whole application works; matching backup contents do not replace a restore test.
+

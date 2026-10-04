@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="590" viewBox="0 0 1280 590" role="img" aria-labelledby="title desc">
+<title id="title">Service Path Check architecture</title>
+<desc id="desc">Inputs, processing and evidence outputs. The accompanying visual guide describes the complete workflow.</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#7893ab"/></marker></defs>
+<rect width="1280" height="590" rx="20" fill="#0c1b2b"/>
+<text x="60" y="55" fill="#5ccaff" font-family="Arial,sans-serif" font-size="15" letter-spacing="3">DNS · TCP · TLS</text>
+<text x="60" y="104" fill="#f2f6fb" font-family="Arial,sans-serif" font-size="38" font-weight="700">Service Path Check / how it works</text>
+<path d="M330 305.0 C370 305.0 350 222.5 390 222.5" fill="none" stroke="#7893ab" stroke-width="2.5" marker-end="url(#arrow)"/>
+<path d="M560.0 280 L560.0 350" fill="none" stroke="#7893ab" stroke-width="2.5" marker-end="url(#arrow)"/>
+<path d="M730 400.0 C770 400.0 795 222.5 835 222.5" fill="none" stroke="#7893ab" stroke-width="2.5" marker-end="url(#arrow)"/>
+<path d="M730 400.0 C770 400.0 795 400.0 835 400.0" fill="none" stroke="#7893ab" stroke-width="2.5" marker-end="url(#arrow)"/>
+<path d="M1022.5 280 L1022.5 350" fill="none" stroke="#7893ab" stroke-width="2.5" marker-end="url(#arrow)"/>
+<rect x="60" y="245" width="270" height="120" rx="12" fill="#142b40" stroke="#36516b"/>
+<rect x="60" y="262" width="4" height="86" rx="2" fill="#5ccaff"/>
+<text x="80" y="278" fill="#f2f6fb" font-family="Arial,sans-serif" font-size="23" font-weight="700">Configured endpoint</text>
+<text x="80" y="305" fill="#b9cbdd" font-family="Arial,sans-serif" font-size="16">Hostname + port + TLS option</text>
+<rect x="390" y="165" width="340" height="115" rx="12" fill="#142b40" stroke="#36516b"/>
+<rect x="390" y="182" width="4" height="81" rx="2" fill="#5ccaff"/>
+<text x="410" y="198" fill="#f2f6fb" font-family="Arial,sans-serif" font-size="23" font-weight="700">DNS resolution</text>
+<text x="410" y="225" fill="#b9cbdd" font-family="Arial,sans-serif" font-size="16">Bounded resolver process</text>
+<text x="410" y="248" fill="#b9cbdd" font-family="Arial,sans-serif" font-size="16">Up to 8 addresses per sample</text>
+<rect x="390" y="350" width="340" height="100" rx="12" fill="#142b40" stroke="#36516b"/>
+<rect x="390" y="367" width="4" height="66" rx="2" fill="#5ccaff"/>
+<text x="410" y="383" fill="#f2f6fb" font-family="Arial,sans-serif" font-size="23" font-weight="700">TCP connection</text>
+<text x="410" y="410" fill="#b9cbdd" font-family="Arial,sans-serif" font-size="16">Try each selected IP and port</text>
+<rect x="835" y="165" width="375" height="115" rx="12" fill="#142b40" stroke="#36516b"/>
+<rect x="835" y="182" width="4" height="81" rx="2" fill="#5ccaff"/>
+<text x="855" y="198" fill="#f2f6fb" font-family="Arial,sans-serif" font-size="23" font-weight="700">Optional verified TLS</text>
+<text x="855" y="225" fill="#b9cbdd" font-family="Arial,sans-serif" font-size="16">Certificate trust + hostname</text>
+<text x="855" y="248" fill="#b9cbdd" font-family="Arial,sans-serif" font-size="16">Only after TCP connects</text>
+<rect x="835" y="350" width="375" height="100" rx="12" fill="#142b40" stroke="#36516b"/>
+<rect x="835" y="367" width="4" height="66" rx="2" fill="#5ccaff"/>
+<text x="855" y="383" fill="#f2f6fb" font-family="Arial,sans-serif" font-size="23" font-weight="700">HTML + JSON report</text>
+<text x="855" y="410" fill="#b9cbdd" font-family="Arial,sans-serif" font-size="16">Keep failed and mixed samples</text>
+<text x="855" y="433" fill="#b9cbdd" font-family="Arial,sans-serif" font-size="16">Observation plus next steps</text>
+<text x="60" y="549" fill="#5ccaff" font-family="Arial,sans-serif" font-size="17">EXPLICIT ENDPOINTS ONLY  •  No subnet scan  •  Connection success does not prove application health</text></svg>
